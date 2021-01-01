@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 var errRequestFailed = errors.New("Request failed")
@@ -14,27 +15,36 @@ func main() {
 	// panic: assignment to entry in nil map
 
 	// 또는 make 함수로 생성
-	results := map[string]string{}
-	urls := []string{
-		"https://www.airbnb.com",
-		"https://www.google.com",
-		"https://www.amazon.com",
-		"https://www.reddit.com",
-		"https://www.soundcloud.com",
-		"https://www.facebook.com",
-		"https://www.instagram.com",
-	}
+	// results := map[string]string{}
+	// urls := []string{
+	// 	"https://www.airbnb.com",
+	// 	"https://www.google.com",
+	// 	"https://www.amazon.com",
+	// 	"https://www.reddit.com",
+	// 	"https://www.soundcloud.com",
+	// 	"https://www.facebook.com",
+	// 	"https://www.instagram.com",
+	// }
 
-	for _, url := range urls {
-		result := "OK"
-		err := hitURL(url)
-		if err != nil {
-			result = "FAILED"
-		}
-		results[url] = result
+	// for _, url := range urls {
+	// 	result := "OK"
+	// 	err := hitURL(url)
+	// 	if err != nil {
+	// 		result = "FAILED"
+	// 	}
+	// 	results[url] = result
+	// }
+	// for url, result := range results {
+	// 	fmt.Println(url, result)
+	// }
+	c := make(chan string)
+	people := [5]string{"nico", "flynn", "a", "b", "c"}
+	for _, person := range people {
+		go isSexy(person, c)
+
 	}
-	for url, result := range results {
-		fmt.Println(url, result)
+	for i := 0; i < len(people); i++ {
+		fmt.Println(<-c)
 	}
 }
 
@@ -46,4 +56,9 @@ func hitURL(url string) error {
 		return errRequestFailed
 	}
 	return nil
+}
+
+func isSexy(person string, c chan string) {
+	time.Sleep(time.Second * 3)
+	c <- person + " is sexy"
 }
