@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type requestResult struct {
+	url    string
+	status string
+}
+
 var errRequestFailed = errors.New("Request failed")
 
 func main() {
@@ -15,47 +20,48 @@ func main() {
 	// panic: assignment to entry in nil map
 
 	// 또는 make 함수로 생성
-	// results := map[string]string{}
-	// urls := []string{
-	// 	"https://www.airbnb.com",
-	// 	"https://www.google.com",
-	// 	"https://www.amazon.com",
-	// 	"https://www.reddit.com",
-	// 	"https://www.soundcloud.com",
-	// 	"https://www.facebook.com",
-	// 	"https://www.instagram.com",
-	// }
-
-	// for _, url := range urls {
-	// 	result := "OK"
-	// 	err := hitURL(url)
-	// 	if err != nil {
-	// 		result = "FAILED"
-	// 	}
-	// 	results[url] = result
-	// }
-	// for url, result := range results {
-	// 	fmt.Println(url, result)
-	// }
-	c := make(chan string)
-	people := [5]string{"nico", "flynn", "a", "b", "c"}
-	for _, person := range people {
-		go isSexy(person, c)
-
+	results := map[string]string{}
+	c := make(chan requestResult)
+	urls := []string{
+		"https://www.airbnb.com",
+		"https://www.google.com",
+		"https://www.amazon.com",
+		"https://www.reddit.com",
+		"https://www.soundcloud.com",
+		"https://www.facebook.com",
+		"https://www.instagram.com",
 	}
-	for i := 0; i < len(people); i++ {
-		fmt.Println(<-c)
+
+	for _, url := range urls {
+		go hitURL(url, c)
 	}
+	for i := 0; i < len(urls); i++ {
+		result := <-c
+		results[result.url] = result.status
+	}
+	for url, status := range results {
+		fmt.Println(url, status)
+	}
+
+	// c := make(chan string)
+	// people := [5]string{"nico", "flynn", "a", "b", "c"}
+	// for _, person := range people {
+	// 	go isSexy(person, c)
+
+	// }
+	// for i := 0; i < len(people); i++ {
+
+	// 	fmt.Println(<-c)
+	// }
 }
 
-func hitURL(url string) error {
-	fmt.Println("Checking ", url)
+func hitURL(url string, c chan<- requestResult) {
 	resp, err := http.Get(url)
+	status := "OK"
 	if err != nil || resp.StatusCode >= 400 {
-		fmt.Println(err, resp.StatusCode)
-		return errRequestFailed
+		status = "FAIL"
 	}
-	return nil
+	c <- requestResult{url: url, status: status}
 }
 
 func isSexy(person string, c chan string) {
